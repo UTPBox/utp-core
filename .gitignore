@@ -1,0 +1,34 @@
+# Build Artifacts
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Go
+vendor/
+go.work
+go.work.sum
+
+# Sing-box & Core
+utp-core
+utp-core.log
+config.json.bak
+# Keep config.json but ignore user specific ones if needed? 
+# Usually config.json is sample, so we might keep it. 
+# But let's ignore local test configs if they follow a pattern.
+*.test.json
+
+# System
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
