@@ -3,7 +3,6 @@ package psiphon
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net"
 
@@ -22,11 +21,7 @@ type Outbound struct {
 }
 
 // NewOutbound creates a new Psiphon outbound
-func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, rawMessage json.RawMessage) (adapter.Outbound, error) {
-	var opts PsiphonOptions
-	if err := json.Unmarshal(rawMessage, &opts); err != nil {
-		return nil, err
-	}
+func NewOutbound(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, opts PsiphonOptions) (adapter.Outbound, error) {
 	return &Outbound{
 		tag:  tag,
 		opts: opts,

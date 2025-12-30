@@ -9,10 +9,12 @@ import (
 	"syscall"
 
 	"github.com/sagernet/sing-box"
+	"github.com/sagernet/sing-box/adapter/outbound"
+	"github.com/sagernet/sing-box/include"
 	"github.com/sagernet/sing-box/option"
 	"github.com/spf13/cobra"
 
-	_ "github.com/UTPBox/utp-core/extensions/psiphon"
+	psiphon "github.com/UTPBox/utp-core/extensions/psiphon"
 )
 
 var (
@@ -56,20 +58,43 @@ func main() {
 }
 
 func runService(cmd *cobra.Command, args []string) error {
-	// Load configuration
+	// 1. Load configuration file
 	configContent, err := os.ReadFile(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	// Parse configuration
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// 2. Initialize Registries using include package
+	inboundRegistry := include.InboundRegistry()
+	outboundRegistry := include.OutboundRegistry()
+	endpointRegistry := include.EndpointRegistry()
+	dnsTransportRegistry := include.DNSTransportRegistry()
+	serviceRegistry := include.ServiceRegistry()
+
+	// 3. Register Custom Psiphon Outbound
+	outbound.Register[psiphon.PsiphonOptions](outboundRegistry, "psiphon", psiphon.NewOutbound)
+
+	// 4. Inject Registries into Context
+	ctx = box.Context(
+		ctx,
+		inboundRegistry,
+		outboundRegistry,
+		endpointRegistry,
+		dnsTransportRegistry,
+		serviceRegistry,
+	)
+
+	// 5. Parse configuration contextually (Required for custom protocols)
 	var options option.Options
-	err = options.UnmarshalJSON(configContent)
+	err = options.UnmarshalJSONContext(ctx, configContent)
 	if err != nil {
 		return fmt.Errorf("failed to parse config: %w", err)
 	}
 
-	// Set up logging
+	// 6. Set up default logging if missing (optional)
 	if options.Log == nil {
 		options.Log = &option.LogOptions{
 			Level:  "info",
@@ -77,11 +102,7 @@ func runService(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Create context
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Create Sing-box instance
+	// 7. Create and Start Sing-box instance
 	instance, err := box.New(box.Options{
 		Context: ctx,
 		Options: options,
@@ -90,29 +111,17 @@ func runService(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to create instance: %w", err)
 	}
 
-	// Start the service
-	err = instance.Start()
-	if err != nil {
-		return fmt.Errorf("failed to start service: %w", err)
+	if err := instance.Start(); err != nil {
+		return fmt.Errorf("failed to start instance: %w", err)
 	}
+	defer instance.Close()
 
 	fmt.Println("UTP-Core started successfully")
-	fmt.Printf("Configuration: %s\n", configPath)
-	fmt.Println("Press Ctrl+C to stop")
-
-	// Wait for interrupt signal
+	
+	// Wait for interrupt
 	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh
 
-	fmt.Println("\nShutting down...")
-
-	// Close the instance
-	err = instance.Close()
-	if err != nil {
-		return fmt.Errorf("failed to stop service: %w", err)
-	}
-
-	fmt.Println("UTP-Core stopped")
 	return nil
 }

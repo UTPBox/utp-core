@@ -18,7 +18,7 @@ go.work
 go.work.sum
 
 # Sing-box & Core
-utp-core
+/utp-core
 utp-core.log
 config.json.bak
 # Keep config.json but ignore user specific ones if needed? 
