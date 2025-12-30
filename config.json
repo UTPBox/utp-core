@@ -1,1 +1,63 @@
-{"log": {"level": "info", "output": "utp-core.log"}, "dns": {"servers": [{"tag": "google", "address": "8.8.8.8"}, {"tag": "cloudflare", "address": "1.1.1.1"}], "final": "google"}, "inbounds": [{"tag": "mixed-in", "type": "mixed", "listen": "127.0.0.1", "listen_port": 7890, "users": [{"username": "user1", "password": "pass1"}]}, {"tag": "socks-in", "type": "socks", "listen": "127.0.0.1", "listen_port": 7891, "users": [{"username": "user2", "password": "pass2"}]}, {"tag": "http-in", "type": "http", "listen": "127.0.0.1", "listen_port": 7892}], "outbounds": [{"tag": "direct", "type": "direct"}, {"tag": "block", "type": "block"}, {"tag": "openvpn", "type": "openvpn", "server": "vpn.example.com", "port": 1194, "protocol": "udp", "ca": "-----BEGIN CERTIFICATE-----\n...", "cert": "-----BEGIN CERTIFICATE-----\n...", "key": "-----BEGIN PRIVATE KEY-----\n...", "compression": false, "encryption": "AES-256-GCM"}, {"tag": "ssh-direct", "type": "ssh-direct", "server": "ssh.example.com", "port": 22, "username": "user", "password": "password", "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\n..."}, {"tag": "ssh-proxy", "type": "ssh-proxy", "server": "ssh.example.com", "port": 22, "username": "user", "password": "password", "proxy_server": "proxy.example.com", "proxy_port": 8080, "proxy_method": "http"}, {"tag": "ssh-payload", "type": "ssh-payload", "server": "ssh.example.com", "port": 22, "username": "user", "password": "password", "payload": "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n"}, {"tag": "ssh-tls", "type": "ssh-tls", "server": "ssh.example.com", "port": 443, "username": "user", "password": "password", "tls": true, "tls_config": {"server_name": "example.com", "insecure": false}}, {"tag": "ssh-dnstt", "type": "ssh-dnstt", "server": "dns.example.com", "port": 53, "username": "user", "password": "password", "dns_over_https": "https://cloudflare-dns.com/dns-query"}, {"tag": "dns-doh", "type": "dns-doh", "server": "cloudflare-dns.com", "port": 443, "url": "https://cloudflare-dns.com/dns-query", "headers": {"Accept": "application/dns-json"}, "timeout": 30}, {"tag": "dns-dot", "type": "dns-dot", "server": "1.1.1.1", "port": 853, "tls_config": {"server_name": "cloudflare-dns.com", "insecure": false}}, {"tag": "dns-dnscrypt", "type": "dns-dnscrypt", "server": "127.0.0.1", "port": 53000, "crypt_key": "base64-key", "crypt_provider": "2.dnscrypt-cert.nodelist.org"}, {"tag": "dns-doq", "type": "dns-doq", "server": "dns.cloudflare.com", "port": 784, "timeout": 30}, {"tag": "dns-slowdns", "type": "dns-slowdns", "server": "ssh.example.com", "port": 22, "username": "user", "password": "password"}, {"tag": "obfs4", "type": "obfs4", "server": "obfs4.example.com", "port": 443, "public_key": "base64-public-key", "password": "password", "node_id": "base64-node-id"}, {"tag": "meek", "type": "meek", "server": "meek.azureedge.net", "port": 443, "fronting_domain": "azure.com", "fronting_url": "https://azure.com/", "tls_config": {"server_name": "azure.com"}}, {"tag": "naiveproxy", "type": "naiveproxy", "server": "naive.example.com", "port": 443, "naive_method": "base64", "naive_password": "password", "tls_config": {"server_name": "example.com"}}, {"tag": "cloak", "type": "cloak", "server": "cloak.example.com", "port": 443, "cloak_key": "base64-key", "cloak_blueprint": "base64-blueprint", "tls_config": {"server_name": "example.com"}}, {"tag": "fteproxy", "type": "fteproxy", "server": "fte.example.com", "port": 443, "fte_key": "base64-key", "fte_mode": "plain"}, {"tag": "warp", "type": "warp", "server": "162.159.192.1", "port": 2408, "mode": "wireguard", "private_key": "base64-private-key", "public_key": "base64-public-key"}, {"tag": "warp-plus", "type": "warp-plus", "server": "162.159.192.1", "port": 2408, "mode": "warp+", "license_key": "your-license-key"}, {"tag": "warp-team", "type": "warp", "server": "162.159.192.1", "port": 2408, "mode": "team", "team_id": "your-team-id"}, {"tag": "psiphon", "type": "psiphon", "server": "entry.psiphon3.com", "port": 443, "protocol": "meek", "client_id": "client-id", "auth_token": "auth-token"}, {"tag": "psiphon-ssh", "type": "psiphon-ssh", "server": "entry.psiphon3.com", "port": 443, "protocol": "ssh", "ssh_username": "user", "ssh_password": "password"}, {"tag": "psiphon-quic", "type": "psiphon-quic-go", "server": "entry.psiphon3.com", "port": 443, "protocol": "quic-go", "quic_config": {"max_idle_timeout": "30s"}}, {"tag": "httpinject", "type": "httpinject", "server": "example.com", "port": 443, "protocol": "httpinject", "method": "GET", "path": "/", "payload": "test-payload", "user_agent": "Mozilla/5.0"}, {"tag": "ws-inject", "type": "ws-inject", "server": "example.com", "port": 443, "protocol": "ws-inject", "method": "GET", "ws_path": "/ws", "ws_key": "websocket-key"}, {"tag": "http-connect", "type": "http-connect", "server": "proxy.example.com", "port": 8080, "protocol": "http-connect", "target": "target.example.com:443"}, {"tag": "http-fronting", "type": "http-fronting", "server": "backend.example.com", "port": 443, "protocol": "http-fronting", "fronting_domain": "cloudflare.com", "fronting_url": "https://cloudflare.com/", "payload": "fronting-payload"}, {"tag": "steganographic", "type": "steganographic", "server": "127.0.0.1", "port": 8080, "protocol": "image-steganography", "method": "lsb", "carrier_path": "carrier.png", "encoding": "base64"}, {"tag": "icmp-tunnel", "type": "icmp-tunnel", "server": "icmp.example.com", "port": 0, "protocol": "icmp-tunnel", "icmp_type": 8, "icmp_code": 0}, {"tag": "dns-tunnel", "type": "dns-tunnel", "server": "dns.example.com", "port": 53, "protocol": "dns-tunnel", "dns_domain": "tunnel.example.com", "encoding": "base64"}, {"tag": "email-tunnel", "type": "email-tunnel", "server": "smtp.gmail.com", "port": 587, "protocol": "email-tunnel", "smtp_server": "smtp.gmail.com", "smtp_port": 587, "smtp_user": "user@gmail.com", "smtp_password": "password", "email_to": "recipient@example.com", "subject": "Tunnel Data"}, {"tag": "l2tp", "type": "l2tp", "server": "l2tp.example.com", "port": 1701, "username": "user", "password": "password", "secret": "shared-secret"}, {"tag": "l2tp-ipsec", "type": "l2tp-ipsec", "server": "l2tp.example.com", "port": 1701, "username": "user", "password": "password", "secret": "shared-secret", "psk": "pre-shared-key"}, {"tag": "ikev2", "type": "ikev2", "server": "ikev2.example.com", "port": 500, "username": "user", "password": "password", "ikev2_server_id": "server-id", "ikev2_client_id": "client-id"}, {"tag": "sstp", "type": "sstp", "server": "sstp.example.com", "port": 443, "username": "user", "password": "password", "sstp_url": "https://sstp.example.com/sra_{BA195980-CD49-458b-9E23-C84E0B5B7DC6}/"}, {"tag": "pptp", "type": "pptp", "server": "pptp.example.com", "port": 1723, "username": "user", "password": "password", "pptp_encryption": true}, {"tag": "masque", "type": "masque", "server": "masque.example.com", "port": 443, "protocol": "masque", "masque_request_path": "/masque/v1/request", "masque_response_path": "/masque/v1/response"}, {"tag": "ohhttp", "type": "ohhttp", "server": "ohttp.example.com", "port": 443, "protocol": "ohhttp", "ohttp_target": "https://target.example.com", "ohttp_proxy": "https://proxy.example.com"}, {"tag": "webrtc-dc", "type": "webrtc-dc", "server": "webrtc.example.com", "port": 443, "protocol": "webrtc-dc", "stun_servers": ["stun:stun.l.google.com:19302"], "websocket_url": "wss://webrtc.example.com/ws"}, {"tag": "doh3", "type": "doh3", "server": "dns.cloudflare.com", "port": 443, "protocol": "doh3", "doh3_url": "https://dns.cloudflare.com/dns-query", "timeout": 30}, {"tag": "odoh", "type": "odoh", "server": "odoh.example.com", "port": 443, "protocol": "odoh", "odoh_targets": ["target1.example.com", "target2.example.com"], "odoh_resolver": "resolver.example.com"}, {"tag": "zerotier", "type": "zerotier", "server": "zt.example.com", "port": 9993, "protocol": "zerotier", "zerotier_network_id": "network-id", "zerotier_node_id": "node-id", "zerotier_secret": "secret"}, {"tag": "nebula", "type": "nebula", "server": "nebula.example.com", "port": 0, "protocol": "nebula", "nebula_config": "/path/to/config.yml", "nebula_keys": "/path/to/keys"}, {"tag": "n2n", "type": "n2n", "server": "n2n.example.com", "port": 7654, "protocol": "n2n", "n2n_community": "community-name", "n2n_password": "password", "n2n_ip": "10.0.0.1"}, {"tag": "mqtt-vpn", "type": "mqtt-vpn", "server": "mqtt.example.com", "port": 1883, "protocol": "mqtt-vpn", "mqtt_broker": "mqtt://mqtt.example.com:1883", "mqtt_topic": "vpn/tunnel", "mqtt_client_id": "client-id"}, {"tag": "icmp-vpn", "type": "icmp-vpn", "server": "icmp.example.com", "port": 0, "protocol": "icmp-vpn", "icmp_type": 8, "icmp_code": 0}, {"tag": "smtp-vpn", "type": "smtp-vpn", "server": "smtp.example.com", "port": 587, "protocol": "smtp-vpn", "smtp_server": "smtp.example.com", "smtp_port": 587, "smtp_user": "user@example.com", "smtp_password": "password"}], "route": {"rules": [{"inbound": ["mixed-in"], "outbound": "direct"}, {"inbound": ["socks-in"], "outbound": "direct"}, {"inbound": ["http-in"], "outbound": "direct"}, {"protocol": "http", "outbound": "direct"}, {"protocol": "https", "outbound": "warp"}, {"protocol": "dns", "outbound": "dns-doh"}, {"domain": ["*.google.com", "*.youtube.com"], "outbound": "openvpn"}, {"domain": ["*.facebook.com", "*.twitter.com"], "outbound": "psiphon"}, {"domain": ["*.github.com", "*.stackoverflow.com"], "outbound": "ssh-direct"}, {"ip_cidr": ["8.8.8.8/32", "1.1.1.1/32"], "outbound": "dns-doh"}, {"ip_cidr": ["10.0.0.0/8"], "outbound": "block"}], "final": "direct"}, "experimental": {"cache_file": {"enabled": true, "path": "cache.db"}, "sniff": {"enabled": true, "timeout": "3s"}}}
+{
+  "log": {
+    "level": "info",
+    "timestamp": true
+  },
+  "dns": {
+    "servers": [
+      {
+        "tag": "google",
+        "address": "tls://8.8.8.8"
+      },
+      {
+        "tag": "local",
+        "address": "223.5.5.5",
+        "detour": "direct"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "local"
+      }
+    ],
+    "strategy": "ipv4_only"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 2080,
+      "sniff": true,
+      "sniff_override_destination": true
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    },
+    {
+      "type": "dns",
+      "tag": "dns-out"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "protocol": "dns",
+        "outbound": "dns-out"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "direct"
+      }
+    ],
+    "auto_detect_interface": true
+  }
+}

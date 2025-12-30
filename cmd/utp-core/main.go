@@ -2,81 +2,117 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
-	"time"
 
 	"github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/common"
 	"github.com/sagernet/sing-box/option"
-	
-	// Core extensions - import all supported protocols
-	_ "github.com/UTPBox/utp-core/extensions/openvpn"
-	_ "github.com/UTPBox/utp-core/extensions/ssh"
-	_ "github.com/UTPBox/utp-core/extensions/dns"
-	_ "github.com/UTPBox/utp-core/extensions/obfs"
-	_ "github.com/UTPBox/utp-core/extensions/warp"
+	"github.com/spf13/cobra"
+
 	_ "github.com/UTPBox/utp-core/extensions/psiphon"
-	_ "github.com/UTPBox/utp-core/extensions/httpinject"
-	_ "github.com/UTPBox/utp-core/extensions/stealth"
-	_ "github.com/UTPBox/utp-core/extensions/legacyvpn"
-	_ "github.com/UTPBox/utp-core/extensions/experimental"
 )
 
+var (
+	version = "dev"
+	commit  = "unknown"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "utp-core",
+	Short: "UTP-Core - Universal Tunnel Protocol Core",
+	Long:  `UTP-Core is a proxy core based on Sing-box, designed for advanced networking capabilities.`,
+}
+
+var runCmd = &cobra.Command{
+	Use:   "run",
+	Short: "Run the UTP-Core service",
+	RunE:  runService,
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print version information",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("UTP-Core %s (commit: %s)\n", version, commit)
+	},
+}
+
+var configPath string
+
+func init() {
+	runCmd.Flags().StringVarP(&configPath, "config", "c", "config.json", "Path to configuration file")
+	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(versionCmd)
+}
+
 func main() {
-	// Set up signal handling for graceful shutdown
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func runService(cmd *cobra.Command, args []string) error {
+	// Load configuration
+	configContent, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	// Parse configuration
+	var options option.Options
+	err = options.UnmarshalJSON(configContent)
+	if err != nil {
+		return fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	// Set up logging
+	if options.Log == nil {
+		options.Log = &option.LogOptions{
+			Level:  "info",
+			Output: filepath.Join(os.TempDir(), "utp-core.log"),
+		}
+	}
+
+	// Create context
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigCh
-		log.Println("Received shutdown signal, stopping UTP-Core...")
-		cancel()
-	}()
-
-	// Load configuration
-	var options option.Options
-	
-	// Check for config file
-	configFile := "config.json"
-	if len(os.Args) > 1 {
-		configFile = os.Args[1]
-	}
-
-	if err := common.LoadConfig(ctx, &options, configFile); err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-
-	// Create and start the instance
-	instance, err := common.New(options)
+	// Create Sing-box instance
+	instance, err := box.New(box.Options{
+		Context: ctx,
+		Options: options,
+	})
 	if err != nil {
-		log.Fatalf("Failed to create instance: %v", err)
+		return fmt.Errorf("failed to create instance: %w", err)
 	}
 
-	// Start the instance
-	if err := instance.Start(); err != nil {
-		log.Fatalf("Failed to start instance: %v", err)
+	// Start the service
+	err = instance.Start()
+	if err != nil {
+		return fmt.Errorf("failed to start service: %w", err)
 	}
 
-	log.Println("UTP-Core started successfully with all extensions loaded")
-	log.Printf("Supported protocols: OpenVPN, SSH (all variants), DNS (DoH/DoT/DNSCrypt/DoQ), Obfuscation (Obfs4/Meek/Cloak), WARP, Psiphon, HTTP Injection, Stealth, Legacy VPN")
-	
-	// Wait for shutdown signal
-	<-ctx.Done()
-	
-	// Graceful shutdown
-	log.Println("Stopping UTP-Core...")
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer shutdownCancel()
-	
-	if err := instance.Stop(shutdownCtx); err != nil {
-		log.Printf("Error during shutdown: %v", err)
+	fmt.Println("UTP-Core started successfully")
+	fmt.Printf("Configuration: %s\n", configPath)
+	fmt.Println("Press Ctrl+C to stop")
+
+	// Wait for interrupt signal
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	<-sigCh
+
+	fmt.Println("\nShutting down...")
+
+	// Close the instance
+	err = instance.Close()
+	if err != nil {
+		return fmt.Errorf("failed to stop service: %w", err)
 	}
-	
-	log.Println("UTP-Core stopped successfully")
+
+	fmt.Println("UTP-Core stopped")
+	return nil
 }

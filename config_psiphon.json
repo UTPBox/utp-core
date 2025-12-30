@@ -1,0 +1,42 @@
+{
+    "log": {
+        "level": "info",
+        "timestamp": true
+    },
+    "inbounds": [
+        {
+            "type": "mixed",
+            "tag": "mixed-in",
+            "listen": "127.0.0.1",
+            "listen_port": 2080
+        }
+    ],
+    "outbounds": [
+        {
+            "type": "psiphon",
+            "tag": "psiphon-out",
+            "server": "1.1.1.1",
+            "port": 443,
+            "username": "example_user",
+            "password": "example_password",
+            "use_tls": true,
+            "header_host": "example.com"
+        },
+        {
+            "type": "direct",
+            "tag": "direct"
+        }
+    ],
+    "route": {
+        "rules": [
+            {
+                "outbound": "psiphon-out",
+                "port": 80
+            },
+            {
+                "outbound": "direct",
+                "network": "udp"
+            }
+        ]
+    }
+}
